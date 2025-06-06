@@ -90,7 +90,7 @@ if st.button("🔍 Search News"):
         if master_df.empty:
             st.error("No articles found for any of the provided tickers.")
         else:
-            st.markdown("## 📊 Sentiment Analysis Results")
+            st.markdown("### 📊 Sentiment Analysis Results")
 
             st.markdown("### 📈 Summary Statistics")
             summary = master_df.groupby('Ticker')['Sentiment'].value_counts().unstack().fillna(0)
