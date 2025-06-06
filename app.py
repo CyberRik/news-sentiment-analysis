@@ -46,7 +46,6 @@ if st.button("🔍 Search News"):
     if not target_date:
         st.warning("Please select a date before searching.")
     else:
-        tickers = [ticker.strip().upper() for ticker in tickers_input.split(",") if ticker.strip()]
         master_df = pd.DataFrame()
 
         for ticker in tickers:
