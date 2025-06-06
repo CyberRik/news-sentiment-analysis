@@ -5,14 +5,24 @@ import datetime
 def get_articles_by_page(ticker: str, page: int):
     url = f'https://markets.businessinsider.com/news/{ticker.lower()}-stock?p={page}'
     response = requests.get(url)
+    
+    if response.status_code != 200:
+        print(f"Failed to fetch page {page}. Status code: {response.status_code}")
+        return []
+    
     soup = BeautifulSoup(response.text, 'lxml')
 
     articles = []
     for article in soup.find_all('div', class_='latest-news__story'):
-        date_str = article.find('time', class_='latest-news__date').get('datetime')
-        title = article.find('a', class_='news-link').text.strip()
-        source = article.find('span', class_='latest-news__source').text.strip()
-        articles.append((date_str, title, source))
+        try:
+            date_str = article.find('time', class_='latest-news__date').get('datetime')
+            title = article.find('a', class_='news-link').text.strip()
+            source = article.find('span', class_='latest-news__source').text.strip()
+            articles.append((date_str, title, source))
+        except Exception as e:
+            print(f"Error parsing article: {e}")
+            continue
+
     return articles
 
 def find_page_for_date(ticker, target_date, max_pages=200):
@@ -21,8 +31,14 @@ def find_page_for_date(ticker, target_date, max_pages=200):
 
     while left <= right:
         mid = (left + right) // 2
+        # fetch
         articles = get_articles_by_page(ticker, mid)
-        dates = [datetime.datetime.strptime(date, '%m/%d/%Y %I:%M:%S %p') for date, _, _ in articles]
+
+        try:
+           dates = [datetime.datetime.strptime(date, '%m/%d/%Y %I:%M:%S %p') for date, _, _ in articles]
+        except Exception as e:
+            print(f"Error parsing dates on page {mid}: {e}")
+            dates = []
 
         if not dates:
             right = mid - 1
