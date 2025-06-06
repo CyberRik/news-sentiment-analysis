@@ -12,36 +12,29 @@ from visualizations import plot_sentiment_distribution, plot_sentiment_scores
 st.set_page_config(page_title="Stock News Sentiment Analysis", layout="wide")
 sns.set_theme(style="whitegrid")
 
-# Title
 st.markdown(
     "<h1 style='text-align: center; color: #FFFFFF;'>Stock News Sentiment Analysis</h1>",
     unsafe_allow_html=True
 )
 
-# Input Section (full width)
 st.markdown("### 📥 Input")
 
-# Initialize session state
 if 'ticker_list' not in st.session_state:
     st.session_state.ticker_list = []
 
-# Input field
 new_ticker = st.text_input("Enter Stock Ticker:", "")
 
-# Add ticker button
 if st.button("Add Ticker"):
     if new_ticker:
         st.session_state.ticker_list.append(new_ticker.strip().upper())
         st.rerun()
 
-# Display current tickers as "tags"
 st.markdown("#### Selected Tickers:")
 if st.session_state.ticker_list:
     st.markdown(", ".join([f"`{ticker}`" for ticker in st.session_state.ticker_list]))
 else:
     st.info("No tickers added yet.")
 
-# Clear tickers option
 if st.button("Clear Tickers"):
     st.session_state.ticker_list = []
     st.rerun()
@@ -100,7 +93,6 @@ if st.button("🔍 Search News"):
         else:
             st.markdown("## 📊 Sentiment Analysis Results")
 
-            # Summary stats
             st.markdown("### 📈 Summary Statistics")
             summary = master_df.groupby('Ticker')['Sentiment'].value_counts().unstack().fillna(0)
             st.dataframe(summary)
@@ -115,7 +107,6 @@ if st.button("🔍 Search News"):
                 st.markdown("### 📊 Sentiment Distribution by Ticker")
                 fig1 = plot_sentiment_distribution(master_df)
                 st.pyplot(fig1)
-
 
                 with tab3:
                     st.markdown("### 📈 Sentiment Scores by Article")
