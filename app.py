@@ -60,7 +60,7 @@ if st.button("🔍 Search News"):
             else:
                 display_name = ticker
 
-            st.markdown(f"**Searching news for {display_name} on {target_date.strftime('%d/%m/%Y')}**")
+            st.markdown(f"**Searching news for {display_name} on {target_date.strftime('%m/%d/%Y')}**")
             with st.spinner(f"Fetching articles for {ticker}..."):
                 page_number = find_page_for_date(ticker, target_date.strftime('%m/%d/%Y'))
                 if not page_number:
