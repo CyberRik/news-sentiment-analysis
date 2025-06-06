@@ -5,3 +5,6 @@ transformers
 pandas
 requests
 torch
+matplotlib
+seaborn
+yfinance
