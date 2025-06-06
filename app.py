@@ -20,7 +20,33 @@ st.markdown(
 
 # Input Section (full width)
 st.markdown("### 📥 Input")
-tickers_input = st.text_input("Stock Tickers (comma-separated, e.g. AAPL, TSLA, MSFT)", value="")
+
+# Initialize session state
+if 'ticker_list' not in st.session_state:
+    st.session_state.ticker_list = []
+
+# Input field
+new_ticker = st.text_input("Enter Stock Ticker:", "")
+
+# Add ticker button
+if st.button("Add Ticker"):
+    if new_ticker:
+        st.session_state.ticker_list.append(new_ticker.strip().upper())
+        st.rerun()
+
+# Display current tickers as "tags"
+st.markdown("#### Selected Tickers:")
+if st.session_state.ticker_list:
+    st.markdown(", ".join([f"`{ticker}`" for ticker in st.session_state.ticker_list]))
+else:
+    st.info("No tickers added yet.")
+
+# Clear tickers option
+if st.button("Clear Tickers"):
+    st.session_state.ticker_list = []
+    st.rerun()
+
+tickers = st.session_state.ticker_list
 target_date = st.date_input("Target Date (in YYYY/MM/DD)", value=None)
 
 if st.button("🔍 Search News"):
