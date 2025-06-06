@@ -95,29 +95,76 @@ if st.button("🔍 Search News"):
                     hue='Sentiment',
                     palette={'positive': '#2ecc71', 'negative': '#e74c3c', 'neutral': '#95a5a6'}
                 )
-                ax1.set_title('Sentiment Distribution by Ticker', fontsize=14)
+
+                ax1.set_xlabel('Ticker', fontsize=8)
+                ax1.set_ylabel('Count', fontsize=8)
+                ax1.tick_params(axis='x', rotation=45, labelsize=8)
+                ax1.tick_params(axis='y', labelsize=8)
+                ax1.set_xticklabels(ax1.get_xticklabels(), rotation=45, ha='right')
+                ax1.set_ylim(0, master_df['Sentiment'].value_counts().max() + 5)
+                ax1.set_xticks(np.arange(len(master_df['Ticker'].unique())))
+                ax1.set_xticklabels(master_df['Ticker'].unique(), fontsize=8)
+                ax1.set_yticks(np.arange(0, master_df['Sentiment'].value_counts().max() + 5, 5))
+                ax1.set_yticklabels(np.arange(0, master_df['Sentiment'].value_counts().max() + 5, 5), fontsize=8)
+                ax1.grid(axis='y', linestyle='--', alpha=0.7)
+                ax1.set_facecolor('#f0f0f0')
+                ax1.spines['top'].set_visible(False)
+                ax1.spines['right'].set_visible(False)
+                ax1.spines['left'].set_color('#cccccc')
+                ax1.spines['bottom'].set_color('#cccccc')
+                ax1.spines['left'].set_linewidth(0.5)
+                ax1.spines['bottom'].set_linewidth(0.5)
+                ax1.spines['top'].set_linewidth(0.5)
+                ax1.spines['right'].set_linewidth(0.5)
+                ax1.set_facecolor('#f0f0f0')
+                ax1.set_title('Sentiment Distribution by Ticker', fontsize=8)
                 ax1.legend(title='Sentiment', bbox_to_anchor=(1.05, 1), loc='upper left')
                 st.pyplot(fig1)
 
             with tab3:
                 st.markdown("### 📈 Sentiment Scores by Article")
-                max_title_length = 50
+                max_title_length = 25
+
                 master_df['Truncated_Title'] = master_df['Title'].apply(
                     lambda x: x if len(x) <= max_title_length else x[:max_title_length] + '...'
                 )
-                fig_height = min(10, len(master_df) * 0.25)
+
+
+                if (master_df['Ticker'].nunique() > 1):
+                    top_dfs = []
+                    for ticker in master_df['Ticker'].unique():
+                        ticker_df = master_df[master_df['Ticker'] == ticker]
+                        top_ticker_df = ticker_df.sort_values(by='Score', ascending=False).head(20)
+                        top_dfs.append(top_ticker_df)
+
+                    top_df = pd.concat(top_dfs, ignore_index=True)
+                else:
+                    top_df = master_df.sort_values(by='Score', ascending=False).head(20)
+
+
+                fig_height = min(10, len(top_df) * 0.25)
                 fig2, ax2 = plt.subplots(figsize=(8, fig_height))
                 sns.barplot(
                     x='Score',
                     y='Truncated_Title',
-                    data=master_df,
+                    data=top_df,
                     hue='Ticker',
                     dodge=False,
                     palette='Set2'
                 )
-                ax2.set_xlabel('Sentiment Score', fontsize=10)
-                ax2.set_ylabel('Article Title', fontsize=10)
-                ax2.set_title('Sentiment Scores by Article', fontsize=14)
+
+                bar_height = 0.4  
+                for patch in ax2.patches:
+                    patch.set_height(bar_height)
+
+                ax2.set_xlabel('Sentiment Score', fontsize=8)
+                ax2.set_ylabel('Article Title', fontsize=8)
+                ax2.set_title('Sentiment Scores by Article', fontsize=8)
+                ax2.tick_params(axis='y', labelsize=8)
+                ax2.tick_params(axis='x', labelsize=8)
+                ax2.set_xticks(np.arange(-1, 1.1, 0.2))
+                ax2.set_xticklabels(np.round(np.arange(-1, 1.1, 0.2), 1), fontsize=8)
+                ax2.set_yticks(np.arange(len(top_df)))
                 ax2.legend(title='Ticker', bbox_to_anchor=(1.05, 1), loc='upper left')
                 plt.tight_layout()
                 st.pyplot(fig2)
