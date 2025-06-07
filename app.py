@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from newsscraper import find_page_for_date, get_articles_by_page
 from sentiment_analyzer import analyze_sentiment_batch, load_classifier
 import yfinance as yf
-from visualizations import plot_sentiment_distribution, plot_sentiment_scores, plot_sentiment_vs_price
+from visualizations import plot_sentiment_distribution, plot_sentiment_scores
 
 st.set_page_config(page_title="Stock News Sentiment Analysis", layout="wide")
 sns.set_theme(style="whitegrid")
@@ -94,7 +94,7 @@ if st.button("🔍 Search News"):
             summary = master_df.groupby('Ticker')['Sentiment'].value_counts().unstack().fillna(0)
             st.dataframe(summary)
 
-            tab1, tab2, tab3, tab4= st.tabs(["📰 News Articles", "📊 Sentiment Distribution", "📈 Sentiment Scores", "📉 Stock Prices Comparison"])
+            tab1, tab2, tab3 = st.tabs(["📰 News Articles", "📊 Sentiment Distribution", "📈 Sentiment Scores"])
 
             with tab1:
                 st.markdown("### 📰 News Articles")
@@ -121,8 +121,4 @@ if st.button("🔍 Search News"):
                 fig2 = plot_sentiment_scores(top_df)
                 st.pyplot(fig2)
 
-            with tab4:
-                st.markdown("### 📉 Sentiment vs Stock Price Over Time")
-                for ticker in tickers:
-                    fig = plot_sentiment_vs_price(ticker, target_date, master_df)
-                    st.pyplot(fig)
+            
