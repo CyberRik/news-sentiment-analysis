@@ -5,9 +5,9 @@ import datetime
 import seaborn as sns
 import matplotlib.pyplot as plt
 from newsscraper import find_page_for_date, get_articles_by_page
-from sentiment_analyzer import analyze_sentiment
+from sentiment_analyzer import analyze_sentiment_batch, load_classifier
 import yfinance as yf
-from visualizations import plot_sentiment_distribution, plot_sentiment_scores
+from visualizations import plot_sentiment_distribution, plot_sentiment_scores, plot_sentiment_vs_price
 
 st.set_page_config(page_title="Stock News Sentiment Analysis", layout="wide")
 sns.set_theme(style="whitegrid")
@@ -46,11 +46,12 @@ if st.button("🔍 Search News"):
     if not target_date:
         st.warning("Please select a date before searching.")
     else:
+        classifier = load_classifier()
         master_df = pd.DataFrame()
 
         for ticker in tickers:
             try:
-                company_name = yf.Ticker(ticker).info.get('shortname', " ")
+                company_name = yf.Ticker(ticker).info.get('longName', " ")
             except Exception as e:
                 st.error(f"Error fetching data for {ticker}: {e}")
                 continue
@@ -68,13 +69,10 @@ if st.button("🔍 Search News"):
                     continue
 
                 articles = get_articles_by_page(ticker, page_number)
+                titles = [title for _, title, _ in articles]
+                sentiments = analyze_sentiment_batch(classifier, titles)
                 data = []
-                for date_str, title, source in articles:
-                    try:
-                        label, score = analyze_sentiment(title)
-                    except Exception as e:
-                        st.error(f"Error analyzing sentiment for article '{title}': {e}")
-                        label, score = "Unknown", 0.0
+                for (date_str, title, source), (label, score) in zip(articles, sentiments):
                     data.append({
                         'Ticker': ticker,
                         'Date': date_str,
@@ -96,7 +94,7 @@ if st.button("🔍 Search News"):
             summary = master_df.groupby('Ticker')['Sentiment'].value_counts().unstack().fillna(0)
             st.dataframe(summary)
 
-            tab1, tab2, tab3 = st.tabs(["📰 News Articles", "📊 Sentiment Distribution", "📈 Sentiment Scores"])
+            tab1, tab2, tab3, tab4= st.tabs(["📰 News Articles", "📊 Sentiment Distribution", "📈 Sentiment Scores", "📉 Stock Prices Comparison"])
 
             with tab1:
                 st.markdown("### 📰 News Articles")
@@ -107,18 +105,24 @@ if st.button("🔍 Search News"):
                 fig1 = plot_sentiment_distribution(master_df)
                 st.pyplot(fig1)
 
-                with tab3:
-                    st.markdown("### 📈 Sentiment Scores by Article")
+            with tab3:
+                st.markdown("### 📈 Sentiment Scores by Article")
 
-                    if (master_df['Ticker'].nunique() > 1):
-                        top_dfs = []
-                        for ticker in master_df['Ticker'].unique():
-                            ticker_df = master_df[master_df['Ticker'] == ticker]
-                            top_ticker_df = ticker_df.sort_values(by='Score', ascending=False).head(20)
-                            top_dfs.append(top_ticker_df)
-                        top_df = pd.concat(top_dfs, ignore_index=True)
-                    else:
-                        top_df = master_df.sort_values(by='Score', ascending=False).head(20)
+                if (master_df['Ticker'].nunique() > 1):
+                    top_dfs = []
+                    for ticker in master_df['Ticker'].unique():
+                        ticker_df = master_df[master_df['Ticker'] == ticker]
+                        top_ticker_df = ticker_df.sort_values(by='Score', ascending=False).head(20)
+                        top_dfs.append(top_ticker_df)
+                    top_df = pd.concat(top_dfs, ignore_index=True)
+                else:
+                    top_df = master_df.sort_values(by='Score', ascending=False).head(20)
 
-                    fig2 = plot_sentiment_scores(top_df)
-                    st.pyplot(fig2)
+                fig2 = plot_sentiment_scores(top_df)
+                st.pyplot(fig2)
+
+            with tab4:
+                st.markdown("### 📉 Sentiment vs Stock Price Over Time")
+                for ticker in tickers:
+                    fig = plot_sentiment_vs_price(ticker, target_date, master_df)
+                    st.pyplot(fig)
