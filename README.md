@@ -69,7 +69,6 @@ This repository provides an interactive web application built with **Streamlit**
 3. Click **Search News** to retrieve news articles for the selected tickers and date.
 4. View the sentiment analysis results and visualizations for the selected tickers.
 
-![Sentiment Distribution](images/sentiment_distribution.png)
 
 ## License
 
@@ -81,4 +80,4 @@ Feel free to fork this repository and submit pull requests for improvements or f
 
 ---
 
-Made with ❤️ by [Your Name](https://github.com/yourusername)
+Made with ❤️ by [CyberRik](https://github.com/CyberRik)
